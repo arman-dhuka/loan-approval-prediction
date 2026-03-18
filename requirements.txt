@@ -1,0 +1,16 @@
+# Core data libraries
+pandas
+numpy
+
+# Visualization (optional but good for EDA)
+matplotlib
+seaborn
+
+# Machine Learning
+scikit-learn
+
+# Model saving/loading
+joblib
+
+# Frontend (Streamlit)
+streamlit
