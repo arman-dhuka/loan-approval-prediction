@@ -46,7 +46,7 @@ h1 {
 # -------------------------
 # LOAD MODEL
 # -------------------------
-model = joblib.load("models/loan_model.pkl")
+model = joblib.load("models/tuned_model.pkl")
 
 # -------------------------
 # TITLE
@@ -97,7 +97,10 @@ def preprocess_input():
         "Property_Area_Urban": 1 if property_area == "Urban" else 0
     }
 
-    return pd.DataFrame([data])
+    df = pd.DataFrame([data])
+    # Ensure all columns are float for StandardScaler compatibility
+    df = df.astype(float)
+    return df
 
 # -------------------------
 # PREDICT BUTTON
@@ -107,15 +110,18 @@ st.markdown("---")
 if st.button("🔍 Predict Loan Status"):
     input_df = preprocess_input()
 
-    prediction = model.predict(input_df)
-    prob = model.predict_proba(input_df)[0][1]
+    try:
+        prediction = model.predict(input_df)
+        prob = model.predict_proba(input_df)[0][1]
 
-    st.markdown("### 📊 Prediction Result")
+        st.markdown("### 📊 Prediction Result")
 
-    if prediction[0] == 1:
-        st.success(f"✅ Loan Approved (Confidence: {prob:.2f})")
-    else:
-        st.error(f"❌ Loan Rejected (Confidence: {1-prob:.2f})")
+        if prediction[0] == 1:
+            st.success(f"✅ Loan Approved (Confidence: {prob:.2f})")
+        else:
+            st.error(f"❌ Loan Rejected (Confidence: {1-prob:.2f})")
+    except Exception as e:
+        st.error(f"⚠️ Prediction failed: {e}")
 
 # -------------------------
 # FOOTER
