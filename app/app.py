@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import joblib
+import os
 
 # -------------------------
 # PAGE CONFIG
@@ -44,9 +45,23 @@ h1 {
 """, unsafe_allow_html=True)
 
 # -------------------------
-# LOAD MODEL
+# LOAD MODEL (with validation)
 # -------------------------
-model = joblib.load("models/tuned_model.pkl")
+MODEL_PATH = "models/tuned_model.pkl"
+
+if not os.path.exists(MODEL_PATH):
+    st.error(f"❌ Model file not found: {MODEL_PATH}")
+    st.stop()
+
+model = joblib.load(MODEL_PATH)
+
+# Safety check: verify loaded object is a trained model
+if not hasattr(model, "predict"):
+    st.error(
+        f"❌ Loaded object is {type(model).__name__}, not a trained model. "
+        "Please retrain and save the model correctly."
+    )
+    st.stop()
 
 # -------------------------
 # TITLE
@@ -98,7 +113,7 @@ def preprocess_input():
     }
 
     df = pd.DataFrame([data])
-    # Ensure all columns are float for StandardScaler compatibility
+    # Ensure all columns are float for model compatibility
     df = df.astype(float)
     return df
 

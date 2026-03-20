@@ -3,7 +3,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
 import joblib
 
 
@@ -19,21 +19,26 @@ def split_data(df):
 
 
 def train_model(X_train, y_train):
-    # pipeline = Pipeline([
-    #     ("scaler", StandardScaler()),
-    #     ("model", RandomForestClassifier())
-    # ])
-    log_pipeline = Pipeline([
-    ("Scaler" , StandardScaler()),
-    ("model" , LogisticRegression(max_iter=1000))
-])
+    pipeline = Pipeline([
+        ("scaler", StandardScaler()),
+        ("model", LogisticRegression(max_iter=1000))
+    ])
 
-    log_pipeline.fit(X_train, y_train)
-    return log_pipeline
+    pipeline.fit(X_train, y_train)
+    return pipeline
 
 
 def save_model(model, path):
-    joblib.dump(model, path)
+    # Safety check: only save if it's a trained model, not predictions
+    if hasattr(model, "predict"):
+        joblib.dump(model, path)
+        print(f"✅ Model saved to {path}")
+        print(f"   Type: {type(model)}")
+    else:
+        raise ValueError(
+            f"❌ Cannot save: object is {type(model)}, not a trained model. "
+            "Make sure you're passing the model, not predictions."
+        )
 
 
 if __name__ == "__main__":
@@ -43,4 +48,10 @@ if __name__ == "__main__":
 
     model = train_model(X_train, y_train)
 
+    # Evaluate before saving
+    y_pred = model.predict(X_test)
+    acc = accuracy_score(y_test, y_pred)
+    print(f"📊 Test Accuracy: {acc:.4f}")
+
+    # Save the MODEL (not y_pred!)
     save_model(model, "../models/loan_model.pkl")
